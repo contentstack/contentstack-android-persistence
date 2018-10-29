@@ -1,0 +1,26 @@
+apply plugin: 'com.android.library'
+apply plugin: 'realm-android'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        minSdkVersion 24
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation files('libs/Contentstack-3.4.0.jar')
+}
