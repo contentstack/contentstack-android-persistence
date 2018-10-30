@@ -1,10 +1,11 @@
 [![Contentstack](https://www.contentstack.com/docs/static/images/contentstack.png)](https://www.contentstack.com/)
 
-# Contentstack android Persistence Library
+# Android SDK for Contentstack Persistence
+
 
 Contentstack provides [Android Persistence Library](https://www.contentstack.com/docs/guide/synchronization/using-realm-persistence-library-with-android-sync-sdk) that lets your application store data on the device's local storage. This helps you build apps that can work offline too. Given below is a detailed guide and helpful resources to get started with our android Persistence Library.
 
-## Prerequisites
+## Prerequisite
 
  * [Android Studio](https://developer.android.com/studio/)
  * [Java jdk 8](https://www.oracle.com/technetwork/es/java/javase/downloads/jdk8-downloads-2133151.html)
