@@ -1,6 +1,8 @@
 [![Contentstack](https://www.contentstack.com/docs/static/images/contentstack.png)](https://www.contentstack.com/)
 
-# Contentstack android Persistence Library
+# Contentstack Android Persistence Library
+
+
 
 Contentstack provides [Android Persistence Library](https://www.contentstack.com/docs/guide/synchronization/using-realm-persistence-library-with-android-sync-sdk) that lets your application store data on the device's local storage. This helps you build apps that can work offline too. Given below is a detailed guide and helpful resources to get started with our android Persistence Library.
 
@@ -15,14 +17,12 @@ You can use the android Persistence Library with Realm databases.  Let's underst
 
 ### For Realm
 
-1. You download below four files from Repository and keep it in your src folder.  
+You download below four files from [Repository](https://github.com/contentstack/contentstack-android-persistence/tree/master/app/src/main/java/com/contentstack/persistence) and keep it in your src folder.  
 
-- RealmStore
-- SyncManager  
-- SyncPersistable  
-- SyncStore
-
-2. Add the above files in a folder to your src folder in project.  
+ * RealmStore
+ * SyncManager  
+ * SyncPersistable  
+ * SyncStore  
 
 
 #### Initialize the library
@@ -30,16 +30,16 @@ You can use the android Persistence Library with Realm databases.  Let's underst
 To start using the library in your application, you will need to initialize it by providing the stack details:
 
 ```
-
-    //Get stack instance like below
-    Stack stack = Contentstack.stack(context, "api_key", "access_token", "environment");
+  //Get stack instance like below
+  Stack stack = Contentstack.stack(context, "api_key", "access_token", "environment");
     
-    //Provide realmInstance using 
-    Realm realmInstance = Realm.getDefaultInstance();
-    //Provide realmStore instance 
-    RealmStore realmStore = new RealmStore(realmInstance);
-    SyncManager manager = new SyncManager(realmStore, stack);
-    manager.stackRequest();
+  //Provide realmInstance using 
+  Realm realmInstance = Realm.getDefaultInstance();
+  //Provide realmInstance to RealmStore's constructor like below.
+  RealmStore realmStore = new RealmStore(realmInstance);
+    
+  SyncManager manager = new SyncManager(realmStore, stack);
+  manager.stackRequest();
  
 ```
 We have created an example app using android Persistence Library that stores data on the device's local storage. [Read the tutorial](https://github.com/contentstack/contentstack-android-persistence-example) to get started with the example app.   
@@ -47,5 +47,5 @@ We have created an example app using android Persistence Library that stores dat
 ### Helpful Links
 
 - [Android Persistence Library Docs](https://www.contentstack.com/docs/guide/synchronization/using-realm-persistence-library-with-android-sync-sdk)
-- [Android Persistence Example App]((https://github.com/contentstack/contentstack-android-persistence-example))
+- [Android Persistence Example App](https://github.com/contentstack/contentstack-android-persistence-example)
 - [Content Delivery API Docs](https://contentstack.com/docs/apis/content-delivery-api/)
