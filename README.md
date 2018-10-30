@@ -18,10 +18,10 @@ You can use the android Persistence Library with Realm databases.  Let's underst
 
 You download below four files from [Repository](https://github.com/contentstack/contentstack-android-persistence/tree/master/app/src/main/java/com/contentstack/persistence) and keep it in your src folder.  
 
-    - RealmStore
-    - SyncManager  
-    - SyncPersistable  
-    - SyncStore  
+ * RealmStore
+ * SyncManager  
+ * SyncPersistable  
+ * SyncStore  
 
 
 #### Initialize the library
@@ -29,16 +29,16 @@ You download below four files from [Repository](https://github.com/contentstack/
 To start using the library in your application, you will need to initialize it by providing the stack details:
 
 ```
-    //Get stack instance like below
-    Stack stack = Contentstack.stack(context, "api_key", "access_token", "environment");
+  //Get stack instance like below
+  Stack stack = Contentstack.stack(context, "api_key", "access_token", "environment");
     
-    //Provide realmInstance using 
-    Realm realmInstance = Realm.getDefaultInstance();
-    //Provide realmInstance to RealmStore's constructor like below.
-    RealmStore realmStore = new RealmStore(realmInstance);
+  //Provide realmInstance using 
+  Realm realmInstance = Realm.getDefaultInstance();
+  //Provide realmInstance to RealmStore's constructor like below.
+  RealmStore realmStore = new RealmStore(realmInstance);
     
-    SyncManager manager = new SyncManager(realmStore, stack);
-    manager.stackRequest();
+  SyncManager manager = new SyncManager(realmStore, stack);
+  manager.stackRequest();
  
 ```
 We have created an example app using android Persistence Library that stores data on the device's local storage. [Read the tutorial](https://github.com/contentstack/contentstack-android-persistence-example) to get started with the example app.   
