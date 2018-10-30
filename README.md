@@ -31,13 +31,12 @@ You can use the android Persistence Library with Realm databases.  Let's underst
 To start using the library in your application, you will need to initialize it by providing the stack details:
 
 ```
-
     //Get stack instance like below
     Stack stack = Contentstack.stack(context, "api_key", "access_token", "environment");
     
     //Provide realmInstance using 
     Realm realmInstance = Realm.getDefaultInstance();
-    //Provide realmStore instance 
+    //Provide realmInstance to RealmStore's constructor like below.
     RealmStore realmStore = new RealmStore(realmInstance);
     SyncManager manager = new SyncManager(realmStore, stack);
     manager.stackRequest();
