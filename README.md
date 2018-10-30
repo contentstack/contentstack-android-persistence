@@ -16,7 +16,7 @@ You can use the android Persistence Library with Realm databases.  Let's underst
 
 ### For Realm
 
-1. You download below four files from [Repository](https://github.com/contentstack/contentstack-android-persistence) and keep it in your src folder.  
+You download below four files from [Repository](https://github.com/contentstack/contentstack-android-persistence/tree/master/app/src/main/java/com/contentstack/persistence) and keep it in your src folder.  
 
     - RealmStore
     - SyncManager  
