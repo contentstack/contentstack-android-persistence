@@ -18,10 +18,10 @@ You can use the android Persistence Library with Realm databases.  Let's underst
 
 1. You download below four files from Repository and keep it in your src folder.  
 
-- RealmStore
-- SyncManager  
-- SyncPersistable  
-- SyncStore
+    - RealmStore
+    - SyncManager  
+    - SyncPersistable  
+    - SyncStore
 
 2. Add the above files in a folder to your src folder in project.  
 
@@ -38,6 +38,7 @@ To start using the library in your application, you will need to initialize it b
     Realm realmInstance = Realm.getDefaultInstance();
     //Provide realmInstance to RealmStore's constructor like below.
     RealmStore realmStore = new RealmStore(realmInstance);
+    
     SyncManager manager = new SyncManager(realmStore, stack);
     manager.stackRequest();
  
@@ -47,5 +48,5 @@ We have created an example app using android Persistence Library that stores dat
 ### Helpful Links
 
 - [Android Persistence Library Docs](https://www.contentstack.com/docs/guide/synchronization/using-realm-persistence-library-with-android-sync-sdk)
-- [Android Persistence Example App]((https://github.com/contentstack/contentstack-android-persistence-example))
+- [Android Persistence Example App](https://github.com/contentstack/contentstack-android-persistence-example)
 - [Content Delivery API Docs](https://contentstack.com/docs/apis/content-delivery-api/)
