@@ -154,7 +154,7 @@ public class SyncManager {
                         || publishType.equalsIgnoreCase("asset_unpublished")
                         || publishType.equalsIgnoreCase("asset_deleted")){
 
-                    if (item.has("data") || uid!=null){
+                    if (item.has("data") && uid!=null){
                         realmStoreInstance.deleteRow(modelClass, uid);
                     }
                 }else if (publishType.equalsIgnoreCase("content_type_deleted")){
