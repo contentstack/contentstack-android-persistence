@@ -375,11 +375,9 @@ public class SyncManager {
     private void persistsToken(String sync_token, String pagination_token) {
 
         try {
-
             realmStoreInstance.beginWriteTransaction();
             realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", sync_token, pagination_token));
             realmStoreInstance.commitWriteTransaction();
-
         }catch (Exception e){
             e.printStackTrace();
         }finally {

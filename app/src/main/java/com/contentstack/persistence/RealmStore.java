@@ -1,7 +1,6 @@
 package com.contentstack.persistence;
 
 import org.json.JSONArray;
-
 import io.realm.Realm;
 import io.realm.RealmObject;
 import io.realm.RealmResults;
