@@ -8,14 +8,14 @@ android {
     signingConfigs {
 
         debug {
-            storeFile file("/Users/shaileshmishra/Documents/AndroidSdk/keystore/keystore")
+            storeFile file("/Users/shaileshmishra/keystore")
             storePassword '123456'
             keyAlias 'key0'
             keyPassword '123456'
         }
 
         release {
-            storeFile file("/Users/shaileshmishra/Documents/AndroidSdk/keystore/keystore")
+            storeFile file("/Users/shaileshmishra/keystore")
             storePassword '123456'
             keyAlias 'key0'
             keyPassword '123456'
@@ -67,7 +67,7 @@ configurations { archives }
 
 group = "com.contentstack"
 archivesBaseName = "persistence"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.2-SNAPSHOT"
 
 
 task sourceJar(type: Jar) {
@@ -139,7 +139,7 @@ uploadArchives {
 
                 developers {
                     developer {
-                        id    'mshaileshr@gmail.com'
+                        id    'ishaileshmishra'
                         name  'Shailesh Mishra'
                         email 'mobile@contentstack.com'
                     }

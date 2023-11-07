@@ -1,4 +1,4 @@
-package com.contentstack.persistence;
+package com.contentstack.sdk.persistence;
 
 import org.json.JSONArray;
 

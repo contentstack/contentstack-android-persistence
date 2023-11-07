@@ -1,4 +1,4 @@
-package com.contentstack.persistence;
+package com.contentstack.sdk.persistence;
 
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
