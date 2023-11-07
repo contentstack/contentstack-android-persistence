@@ -31,7 +31,7 @@ Install the Contentful dependency:
   
 * _Gradle_  
 ```groovy  
-compile 'com.contentstack.persistence:0.0.1'
+compile 'com.contentstack.sdk.persistence:0.0.1'
 ```  
 ==============================================================================================================  
 
@@ -47,9 +47,8 @@ You download below four files from [Repository](https://github.com/contentstack/
   
 To start using the library in your application, you will need to initialize it by providing the stack details:  
   
-```  
-  //Get stack instance like below  
-  Stack stack = Contentstack.stack(context, "api_key", "access_token", "environment");  
+```java
+  Stack stack = Contentstack.stack(context, "apiKey", "accessToken", "environment");  
       
   //Provide realmInstance using   
   Realm realmInstance = Realm.getDefaultInstance();  

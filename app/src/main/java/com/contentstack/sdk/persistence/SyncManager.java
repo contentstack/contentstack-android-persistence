@@ -22,7 +22,7 @@
  *
  */
 
-package com.contentstack.persistence;
+package com.contentstack.sdk.persistence;
 import android.support.annotation.NonNull;
 import android.util.ArrayMap;
 import android.util.Log;
