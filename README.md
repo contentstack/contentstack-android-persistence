@@ -14,29 +14,7 @@ Contentstack provides [Android Persistence Library](https://www.contentstack.com
   
 ## Setup and Initialize library  
   
-  
-Setup  
------  
-  
-Install the Contentful dependency:  
-  
-* _Maven_  
-```xml  
-<dependency>  
-<groupId>com.contentstack</groupId>
-<artifactId>persistence</artifactId> 
-<version>0.0.1</version>
-</dependency>  
-```  
-  
-* _Gradle_  
-```groovy  
-compile 'com.contentstack.sdk.persistence:0.0.1'
-```  
-==============================================================================================================  
-
-You can use the android Persistence Library with Realm databases.  Let's understand how to set these up for your project.  
-  
+   
 ### For Realm  
   
 You download below four files from [Repository](https://github.com/contentstack/contentstack-android-persistence/tree/master/app/src/main/java/com/contentstack/persistence) and keep it in your src folder.   
