@@ -6,11 +6,11 @@ jobs:
   security:
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
       - uses: actions/checkout@master
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/gradle-jdk11@master
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
