@@ -10,7 +10,7 @@ jobs:
         uses: android-actions/setup-android@v2
       - uses: actions/checkout@master
       - name: Generate local.properties
-        run: echo "sdk.dir=/usr/local/lib/android/sdk" > local.properties
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/gradle-jdk11@master
         env:
