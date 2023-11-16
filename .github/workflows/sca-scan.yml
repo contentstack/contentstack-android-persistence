@@ -12,6 +12,8 @@ jobs:
         run:  echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
       - name: cat
         run: cat local.properties
+      - name: pwd
+        run: pwd
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/gradle-jdk18@master
         env:
