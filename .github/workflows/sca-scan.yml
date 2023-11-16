@@ -5,7 +5,6 @@ on:
 jobs:
   security:
     runs-on: ubuntu-latest
-    container: snyk/snyk:gradle-jdk14
 
     steps:
       - uses: actions/checkout@master
@@ -17,4 +16,11 @@ jobs:
         run: pwd
       - name: env
         run: env
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/gradle-jdk14@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --fail-on=all
+          command: test || ls
 
