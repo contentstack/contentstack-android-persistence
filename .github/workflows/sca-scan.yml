@@ -15,7 +15,7 @@ jobs:
       - name: pwd
         run: pwd
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/gradle-jdk18@master
+        uses: snyk/actions/gradle-jdk14@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
