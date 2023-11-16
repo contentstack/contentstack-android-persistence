@@ -9,13 +9,10 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Generate local.properties
-        run:  echo "sdk.dir=/usr/local/lib/android/sdk" > local.properties
-      - name: env
-        run: env
+        run:  echo "sdk.dir=$ANDROID_SDK_ROOT > local.properties
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/gradle-jdk11@master
+        uses: snyk/actions/gradle-jdk12@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
         with:
           args: --fail-on=all
