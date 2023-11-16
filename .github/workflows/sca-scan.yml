@@ -5,6 +5,7 @@ on:
 jobs:
   security:
     runs-on: ubuntu-latest
+
     steps:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
