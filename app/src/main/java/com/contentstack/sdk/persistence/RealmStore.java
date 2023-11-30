@@ -1,9 +1,8 @@
-package com.contentstack.persistence;
-
+package com.contentstack.sdk.persistence;
 import org.json.JSONArray;
-
 import io.realm.Realm;
 import io.realm.RealmObject;
+import io.realm.RealmObjectSchema;
 import io.realm.RealmResults;
 
 import static io.realm.Realm.getDefaultInstance;
@@ -11,9 +10,7 @@ import static io.realm.Realm.getDefaultInstance;
 
 public class RealmStore implements SyncPersistable {
 
-    private Realm realmInstance;
-
-    private String TAG = RealmStore.class.getSimpleName();
+    private final Realm realmInstance;
 
     public RealmStore(Realm realmInstance) {
         this.realmInstance = realmInstance;
@@ -25,23 +22,20 @@ public class RealmStore implements SyncPersistable {
 
 
     @Override
-    public RealmObject findOrCreate(Class<? extends RealmObject> className, String uid,  JSONArray jsonObjectString) {
-
+    public RealmObject findOrCreate(Class<? extends RealmObject> className, String uid, JSONArray jsonObjectString) {
         try {
-
             beginWriteTransaction();
             realmInstance.createOrUpdateAllFromJson(className, jsonObjectString);
             commitWriteTransaction();
-
         } catch (Exception e) {
-            throw new RuntimeException(e);
-        }finally {
+            throw new IllegalStateException(e.getLocalizedMessage());
+        } finally {
             closeTransaction();
         }
 
-        return  realmInstance.where(className).equalTo("uid",uid).findFirst();
-
+        return realmInstance.where(className).equalTo("uid", uid).findFirst();
     }
+
 
     @Override
     public RealmResults<? extends RealmObject> find(Class<? extends RealmObject> className) {
@@ -49,41 +43,33 @@ public class RealmStore implements SyncPersistable {
     }
 
 
-    public RealmResults getTable(Class<? extends RealmObject> className){
-
-        RealmResults<? extends RealmObject> schemaTable = realmInstance.where(className).findAll();
-        return schemaTable;
+    public RealmResults getTable(Class<? extends RealmObject> className) {
+        return realmInstance.where(className).findAll();
     }
 
 
     @Override
-    public void deleteRow(final Class<? extends RealmObject> className, final String uid){
-
-        realmInstance.executeTransaction(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                if (className != null){
+    public void deleteRow(final Class<? extends RealmObject> className, final String uid) {
+        realmInstance.executeTransaction(realm -> {
+            if (className != null) {
+                RealmObjectSchema item = realm.getSchema().get(className.getSimpleName());
+                if (item != null && item.hasPrimaryKey()) {
                     String primaryKEY = realm.getSchema().get(className.getSimpleName()).getPrimaryKey();
                     RealmResults<? extends RealmObject> rowResult = realm.where(className).equalTo(primaryKEY, uid).findAll();
-                    rowResult.deleteAllFromRealm();
-                    closeTransaction();
+                    if (rowResult != null) {
+                        rowResult.deleteAllFromRealm();
+                    }
                 }
             }
         });
-
+        closeTransaction();
     }
 
 
     @Override
     public void deleteTable(Class<? extends RealmObject> className) {
-
-        if (className!=null) {
-            realmInstance.executeTransaction(new Realm.Transaction() {
-                @Override
-                public void execute(Realm realm) {
-                    realm.deleteAll();
-                }
-            });
+        if (className != null) {
+            realmInstance.executeTransaction(realm -> realm.deleteAll());
         }
     }
 
@@ -103,11 +89,10 @@ public class RealmStore implements SyncPersistable {
 
     @Override
     public void closeTransaction() {
-        if (!realmInstance.isClosed()){
+        if (!realmInstance.isClosed()) {
             realmInstance.close();
         }
     }
-
 
 
 }
