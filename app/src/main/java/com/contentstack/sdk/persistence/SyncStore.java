@@ -7,29 +7,39 @@ public class SyncStore extends RealmObject {
 
     @PrimaryKey
     private String uniqueId;
-    private String sync_token;
-    private String pagination_token;
+    private String syncToken;
+    private String paginationToken;
 
-    public SyncStore() { }
+    public SyncStore() {
+    }
 
-    public SyncStore(String uniqueId, String sync_token, String pagination_token) {
+    public SyncStore(String uniqueId, String syncToken, String paginationToken) {
         this.uniqueId = uniqueId;
-        this.sync_token = sync_token;
-        this.pagination_token = pagination_token;
+        this.syncToken = syncToken;
+        this.paginationToken = paginationToken;
     }
 
     public String getUniqueId() {
         return uniqueId;
     }
+
     public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId;
     }
-    public String getSync_token() {
-        return sync_token;
+
+    public String getSyncToken() {
+        return syncToken;
     }
-    public void setSync_token(String sync_token) {
-        this.sync_token = sync_token;
+
+    public void setSyncToken(String sync_token) {
+        this.syncToken = sync_token;
     }
-    public String getPagination_token() { return pagination_token; }
-    public void setPagination_token(String pagination_token) { this.pagination_token = pagination_token; }
+
+    public String getPaginationToken() {
+        return paginationToken;
+    }
+
+    public void setPaginationToken(String pagination_token) {
+        this.paginationToken = pagination_token;
+    }
 }
