@@ -5,11 +5,12 @@ apply plugin: 'signing'
 
 android {
 
-    compileSdkVersion 31
+    compileSdkVersion 33
+    namespace 'com.contentstack.sdk.persistence'
 
     defaultConfig {
         minSdkVersion 24
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode 1
         versionName "0.0.2"
     }
