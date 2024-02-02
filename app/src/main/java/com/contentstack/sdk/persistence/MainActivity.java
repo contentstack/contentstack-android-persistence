@@ -1,6 +1,7 @@
 package com.contentstack.sdk.persistence;
 
 import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.contentstack.sdk.Config;
@@ -23,10 +24,10 @@ public class MainActivity extends AppCompatActivity {
     private void loadTheSDK() {
         try {
             Config config = new Config();
-            config.setHost("*******");
+            config.setHost("*************");
             Stack stack = Contentstack.stack(getApplicationContext(),
-                    "********", "************",
-                    "*******", config);
+                    "*************", "*************",
+                    "*************", config);
 
             Realm realmInstance = Realm.getDefaultInstance();
             RealmStore realmStore = new RealmStore(realmInstance);
