@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
                     "*************", "*************",
                     "*************", config);
 
+
             Realm realmInstance = Realm.getDefaultInstance();
             RealmStore realmStore = new RealmStore(realmInstance);
             SyncManager manager = new SyncManager(realmStore, stack);
