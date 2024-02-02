@@ -57,7 +57,7 @@ public class SyncManager {
 
     private void handleError(Error error) {
 
-        if (error.getErrorCode() == 422) {
+        if (error.getStatusCode() == 422) {
 
             if (error.getErrors().containsKey("pagination_token")) {
 

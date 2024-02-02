@@ -23,10 +23,11 @@ public class MainActivity extends AppCompatActivity {
     private void loadTheSDK() {
         try {
             Config config = new Config();
-            config.setHost("*************");
+            config.setHost("*******");
             Stack stack = Contentstack.stack(getApplicationContext(),
-                    "*************", "*************",
-                    "*************", config);
+                    "********", "************",
+                    "*******", config);
+
             Realm realmInstance = Realm.getDefaultInstance();
             RealmStore realmStore = new RealmStore(realmInstance);
             SyncManager manager = new SyncManager(realmStore, stack);
