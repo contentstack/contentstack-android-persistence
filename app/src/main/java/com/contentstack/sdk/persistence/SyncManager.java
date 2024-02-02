@@ -384,12 +384,15 @@ public class SyncManager {
             realmStoreInstance.beginWriteTransaction();
             if (syncToken != null) {
                 realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", null, paginationToken));
+                Log.i(TAG, "syncToken deleted");
             }
             if (paginationToken != null) {
                 realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", syncToken, null));
+                Log.i(TAG, "paginationToken deleted");
             }
             if (syncToken != null && paginationToken != null) {
                 realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", null, null));
+                Log.i(TAG, "sync and pagination token deleted");
             }
             realmStoreInstance.commitWriteTransaction();
         } catch (Exception e) {
