@@ -1,6 +1,7 @@
 package com.contentstack.sdk.persistence;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
+
 import android.util.ArrayMap;
 import android.util.Log;
 
@@ -31,11 +32,11 @@ import io.realm.annotations.RealmField;
 
 public class SyncManager {
 
-    private String TAG = SyncManager.class.getSimpleName();
-    private Logger logger = Logger.getLogger(TAG);
-    private Stack stackInstance;
-    private RealmStore realmStoreInstance;
-    private Realm realmInstance;
+    final private String TAG = SyncManager.class.getSimpleName();
+    final private Logger logger = Logger.getLogger(TAG);
+    final private Stack stackInstance;
+    final private RealmStore realmStoreInstance;
+    final private Realm realmInstance;
     private ArrayMap<String, Class> CONTENT_TYPE_CLASS_MAPPER = new ArrayMap<String, Class>();
     private ArrayMap<Class, ArrayMap<String, String>> CLASS_FIELDS_MAPPER = new ArrayMap<Class, ArrayMap<String, String>>();
 
@@ -54,32 +55,43 @@ public class SyncManager {
     }
 
 
-    /**
-     * @param error instance of error from contentstack
-     */
     private void handleError(Error error) {
-        if (error.getErrorCode() == 422) { // When api returns 422
-            stackRequest();
-        }
-        if (error.getErrorCode() == 429) {
-            if (getPaginationToken() != null) {
-                stackInstance.syncPaginationToken(getPaginationToken(), new SyncResultCallBack() {
-                    @Override
-                    public void onCompletion(SyncStack syncStack, Error error) {
-                        if (error == null) {
-                            logger.log(Level.INFO, syncStack.getJSONResponse().toString());
-                            parseResponse(syncStack);
-                        } else {
-                            handleError(error);
-                        }
-                    }
-                });
+
+        if (error.getErrorCode() == 422) {
+
+            if (error.getErrors().containsKey("pagination_token")) {
+
+                deleteToken(null, getPaginationToken()); // Delete pagination token from local DB
+                stackRequest();
+            } else if (error.getErrors().containsKey("sync_token")) {
+
+                deleteToken(getSyncToken(), null); // Delete sync token from local DB
+                stackRequest();
+            } else {
+
+                try {
+                    throw new Exception();
+                } catch (Exception e) {
+                    throw new RuntimeException(e.getLocalizedMessage());
+                }
             }
+
+        } else if (error.getStatusCode() == 429) {
+            int delayMillis = (int) (1000 + Math.random() * 2000);
+
+            try {
+                Thread.sleep(delayMillis);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e.getLocalizedMessage());
+            }
+            stackRequest();
         }
     }
 
     public void stackRequest() {
+
         if (getSyncToken() != null) {
+            Log.i(TAG, "Call initiated for Sync Token " + getSyncToken());
             stackInstance.syncToken(getSyncToken(), new SyncResultCallBack() {
                 @Override
                 public void onCompletion(SyncStack syncStack, Error error) {
@@ -93,6 +105,7 @@ public class SyncManager {
             });
 
         } else if (getPaginationToken() != null) {
+            Log.i(TAG, "Call initiated for Pagination Token " + getPaginationToken());
             stackInstance.syncPaginationToken(getPaginationToken(), new SyncResultCallBack() {
                 @Override
                 public void onCompletion(SyncStack syncStack, Error error) {
@@ -108,6 +121,7 @@ public class SyncManager {
             stackInstance.sync(new SyncResultCallBack() {
                 @Override
                 public void onCompletion(SyncStack syncStack, Error error) {
+                    Log.i(TAG, "Initial Sync Call");
                     if (error == null) {
                         logger.log(Level.INFO, syncStack.getJSONResponse().toString());
                         parseResponse(syncStack);
@@ -125,6 +139,7 @@ public class SyncManager {
         if (syncStore != null) {
             return realmInstance.where(SyncStore.class).findFirst().getSyncToken();
         } else {
+            Log.e(TAG, "Sync Token Not Found");
             return null;
         }
     }
@@ -135,6 +150,7 @@ public class SyncManager {
         if (syncStore != null) {
             return realmInstance.where(SyncStore.class).findFirst().getPaginationToken();
         } else {
+            Log.e(TAG, "Pagination Token Not Found");
             return null;
         }
     }
@@ -168,10 +184,7 @@ public class SyncManager {
                     mapJSON.put(jsonDECODER(modelClass, resultObject));
                     realmStoreInstance.findOrCreate(modelClass, uid, mapJSON);
 
-                } else if (publishType.equalsIgnoreCase("entry_unpublished")
-                        || publishType.equalsIgnoreCase("entry_deleted")
-                        || publishType.equalsIgnoreCase("asset_unpublished")
-                        || publishType.equalsIgnoreCase("asset_deleted")) {
+                } else if (publishType.equalsIgnoreCase("entry_unpublished") || publishType.equalsIgnoreCase("entry_deleted") || publishType.equalsIgnoreCase("asset_unpublished") || publishType.equalsIgnoreCase("asset_deleted")) {
 
                     if (item.has("data") && uid != null) {
                         realmStoreInstance.deleteRow(modelClass, uid);
@@ -291,10 +304,8 @@ public class SyncManager {
 
 
     private String getInstanceOfField(Field field) {
-
         String checkTYPE = field.getType().getSuperclass().getSimpleName();
         String fieldTYPE = null;
-
         if (checkTYPE.equalsIgnoreCase("RealmObject")) {
             fieldTYPE = "RealmObject";
         } else if (checkTYPE.equalsIgnoreCase("AbstractList")) {
@@ -317,10 +328,8 @@ public class SyncManager {
         for (Annotation annotation : MODEL_CLASS.getAnnotations()) {
             for (Method method : annotation.annotationType().getDeclaredMethods()) {
                 try {
-
                     Object CONTENT_TYPE_NAME = method.invoke(annotation, (Object[]) null);
                     if (!CONTENT_TYPE_NAME.toString().isEmpty() && !CONTENT_TYPE_NAME.toString().equalsIgnoreCase("NO_POLICY")) {
-
                         ArrayMap<String, String> fieldList = new ArrayMap<String, String>();
                         for (Field declaredField : MODEL_CLASS.getDeclaredFields()) {
                             if (declaredField.isAnnotationPresent(RealmField.class)) {
@@ -357,12 +366,34 @@ public class SyncManager {
 
 
     private void persistsToken(String sync_token, String pagination_token) {
+        Log.e("tokens :", "sync_token: " + sync_token + " pagination_token: " + pagination_token);
         try {
             realmStoreInstance.beginWriteTransaction();
             realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", sync_token, pagination_token));
             realmStoreInstance.commitWriteTransaction();
         } catch (Exception e) {
             Log.e("Persistence Token :", e.getLocalizedMessage().toString());
+            e.printStackTrace();
+        } finally {
+            realmStoreInstance.closeTransaction();
+        }
+    }
+
+    private void deleteToken(String syncToken, String paginationToken) {
+        try {
+            realmStoreInstance.beginWriteTransaction();
+            if (syncToken != null) {
+                realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", null, paginationToken));
+            }
+            if (paginationToken != null) {
+                realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", syncToken, null));
+            }
+            if (syncToken != null && paginationToken != null) {
+                realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", null, null));
+            }
+            realmStoreInstance.commitWriteTransaction();
+        } catch (Exception e) {
+            Log.e("Persistence Token :", e.getLocalizedMessage());
             e.printStackTrace();
         } finally {
             realmStoreInstance.closeTransaction();
