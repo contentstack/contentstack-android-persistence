@@ -9,14 +9,24 @@ public class SyncStore extends RealmObject {
     private String uniqueId;
     private String syncToken;
     private String paginationToken;
+    private String sequenceToken;
 
     public SyncStore() {
     }
 
-    public SyncStore(String uniqueId, String syncToken, String paginationToken) {
+    public SyncStore(String uniqueId, String syncToken, String paginationToken, String seqId) {
         this.uniqueId = uniqueId;
         this.syncToken = syncToken;
         this.paginationToken = paginationToken;
+        this.sequenceToken = seqId;
+    }
+
+    public String getSequenceToken() {
+        return sequenceToken;
+    }
+
+    public void setSequenceToken(String sequenceToken) {
+        this.sequenceToken = sequenceToken;
     }
 
     public String getUniqueId() {

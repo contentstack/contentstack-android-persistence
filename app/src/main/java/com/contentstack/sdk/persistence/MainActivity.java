@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
             RealmStore realmStore = new RealmStore(realmInstance);
             SyncManager manager = new SyncManager(realmStore, stack);
             manager.stackRequest();
+            manager.sync();
 
         } catch (Exception e) {
             e.printStackTrace();

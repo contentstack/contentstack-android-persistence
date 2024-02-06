@@ -55,38 +55,57 @@ public class SyncManager {
     }
 
 
+    void makeDelay() {
+        int delayMillis = (int) (1000 + Math.random() * 2000);
+        try {
+            Thread.sleep(delayMillis);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e.getLocalizedMessage());
+        }
+    }
+
+
     private void handleError(Error error) {
-
         if (error.getStatusCode() == 422) {
-
-            if (error.getErrors().containsKey("pagination_token")) {
-
-                deleteToken(null, getPaginationToken()); // Delete pagination token from local DB
-                stackRequest();
-            } else if (error.getErrors().containsKey("sync_token")) {
-
-                deleteToken(getSyncToken(), null); // Delete sync token from local DB
-                stackRequest();
-            } else {
-
-                try {
-                    throw new Exception();
-                } catch (Exception e) {
-                    throw new RuntimeException(e.getLocalizedMessage());
-                }
-            }
-
+            stackRequest();
         } else if (error.getStatusCode() == 429) {
-            int delayMillis = (int) (1000 + Math.random() * 2000);
-
-            try {
-                Thread.sleep(delayMillis);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e.getLocalizedMessage());
-            }
+            makeDelay();
             stackRequest();
         }
     }
+
+
+    // Replacement of stackRequest
+    public void sync() {
+        if (getSequenceToken() != null) {
+            Log.i(TAG, "Call initiated for Sequential Sync " + getSyncToken());
+            stackInstance.seqSync(getSequenceToken(), new SyncResultCallBack() {
+                @Override
+                public void onCompletion(SyncStack syncStack, Error error) {
+                    if (error == null) {
+                        Log.i(TAG, syncStack.getJSONResponse().toString());
+                        parseResponse(syncStack);
+                    } else {
+                        handleError(error);
+                    }
+                }
+            });
+        } else {
+            stackInstance.initSeqSync(new SyncResultCallBack() {
+                @Override
+                public void onCompletion(SyncStack syncStack, Error error) {
+                    Log.i(TAG, "Initial Sync Call");
+                    if (error == null) {
+                        logger.log(Level.INFO, syncStack.getJSONResponse().toString());
+                        parseResponse(syncStack);
+                    } else {
+                        handleError(error);
+                    }
+                }
+            });
+        }
+    }
+
 
     public void stackRequest() {
 
@@ -134,6 +153,16 @@ public class SyncManager {
     }
 
 
+    private String getSequenceToken() {
+        SyncStore syncStore = realmInstance.where(SyncStore.class).findFirst();
+        if (syncStore != null) {
+            return realmInstance.where(SyncStore.class).findFirst().getSequenceToken();
+        } else {
+            Log.e(TAG, "Sequence Token Not Found");
+            return null;
+        }
+    }
+
     private String getSyncToken() {
         SyncStore syncStore = realmInstance.where(SyncStore.class).findFirst();
         if (syncStore != null) {
@@ -160,8 +189,9 @@ public class SyncManager {
         ArrayList<JSONObject> jsonList = stackResponse.getItems();
         String syncToken = stackResponse.getSyncToken();
         String pagiToken = stackResponse.getPaginationToken();
+        String sequenceToken = stackResponse.getSequentialToken();
         if (syncToken != null) {
-            persistsToken(syncToken, pagiToken);
+            persistsToken(syncToken, pagiToken, sequenceToken);
         }
         jsonList.forEach(this::handleJSON);
     }
@@ -365,11 +395,11 @@ public class SyncManager {
     }
 
 
-    private void persistsToken(String sync_token, String pagination_token) {
-        Log.e("Tokens :", "Sync Token: " + sync_token + " pagination_token: " + pagination_token);
+    private void persistsToken(String sync_token, String paginationToken, String sequenceToken) {
+        Log.e("Tokens :", "Sync Token: " + sync_token + " pagination_token: " + paginationToken);
         try {
             realmStoreInstance.beginWriteTransaction();
-            realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", sync_token, pagination_token));
+            realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", sync_token, paginationToken, sequenceToken));
             realmStoreInstance.commitWriteTransaction();
         } catch (Exception e) {
             Log.e("Persistence Token :", e.getLocalizedMessage().toString());
@@ -379,19 +409,19 @@ public class SyncManager {
         }
     }
 
-    private void deleteToken(String syncToken, String paginationToken) {
+    private void deleteToken(String syncToken, String paginationToken, String sequenceToken) {
         try {
             realmStoreInstance.beginWriteTransaction();
             if (syncToken != null) {
-                realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", null, paginationToken));
+                realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", null, paginationToken, sequenceToken));
                 Log.i(TAG, "syncToken deleted");
             }
             if (paginationToken != null) {
-                realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", syncToken, null));
+                realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", syncToken, null, sequenceToken));
                 Log.i(TAG, "paginationToken deleted");
             }
             if (syncToken != null && paginationToken != null) {
-                realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", null, null));
+                realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", null, null, null));
                 Log.i(TAG, "sync and pagination token deleted");
             }
             realmStoreInstance.commitWriteTransaction();
