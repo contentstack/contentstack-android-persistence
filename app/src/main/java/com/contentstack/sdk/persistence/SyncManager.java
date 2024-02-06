@@ -55,6 +55,9 @@ public class SyncManager {
     }
 
 
+    /**
+     * Breath delay
+     */
     void makeDelay() {
         int delayMillis = (int) (1000 + Math.random() * 2000);
         try {
