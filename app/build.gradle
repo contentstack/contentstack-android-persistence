@@ -27,7 +27,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.contentstack.sdk:android:3.14.0-20240206.134831-2'
+    implementation 'com.contentstack.sdk:android:3.14.0-20240208.095825-3'
     implementation 'androidx.appcompat:appcompat:1.0.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
