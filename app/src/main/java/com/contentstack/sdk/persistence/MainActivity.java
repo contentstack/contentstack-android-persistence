@@ -10,6 +10,7 @@ import com.contentstack.sdk.Stack;
 
 import io.realm.Realm;
 
+// This is only for testing support
 public class MainActivity extends AppCompatActivity {
 
     @Override
