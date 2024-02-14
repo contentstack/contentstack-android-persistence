@@ -32,8 +32,8 @@ import io.realm.annotations.RealmField;
 
 public class SyncManager {
 
-    final private String TAG = SyncManager.class.getSimpleName();
-    final private Logger logger = Logger.getLogger(TAG);
+    final private static String TAG = SyncManager.class.getSimpleName();
+    final private static Logger logger = Logger.getLogger(TAG);
     final private Stack stackInstance;
     final private RealmStore realmStoreInstance;
     final private Realm realmInstance;
@@ -55,44 +55,63 @@ public class SyncManager {
     }
 
 
-    private void handleError(Error error) {
-
-        if (error.getStatusCode() == 422) {
-
-            if (error.getErrors().containsKey("pagination_token")) {
-
-                deleteToken(null, getPaginationToken()); // Delete pagination token from local DB
-                stackRequest();
-            } else if (error.getErrors().containsKey("sync_token")) {
-
-                deleteToken(getSyncToken(), null); // Delete sync token from local DB
-                stackRequest();
-            } else {
-
-                try {
-                    throw new Exception();
-                } catch (Exception e) {
-                    throw new RuntimeException(e.getLocalizedMessage());
-                }
-            }
-
-        } else if (error.getStatusCode() == 429) {
-            int delayMillis = (int) (1000 + Math.random() * 2000);
-
-            try {
-                Thread.sleep(delayMillis);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e.getLocalizedMessage());
-            }
-            stackRequest();
+    void makeRandomDelay() {
+        int minDelayMillis = 1000; // Minimum delay of 1000 milliseconds (1 second)
+        int maxDelayMillis = 3000; // Maximum delay of 3000 milliseconds (3 seconds)
+        int delayMillis = minDelayMillis + (int) (Math.random() * (maxDelayMillis - minDelayMillis + 1));
+        //It's helpful to introduce a random delay of 1000-3000 milliseconds in the request.
+        try {
+            Thread.sleep(delayMillis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Restore interrupted state
+            throw new RuntimeException("Thread sleep interrupted: " + e.getMessage());
         }
     }
 
-    public void stackRequest() {
 
-        if (getSyncToken() != null) {
-            Log.i(TAG, "Call initiated for Sync Token " + getSyncToken());
-            stackInstance.syncToken(getSyncToken(), new SyncResultCallBack() {
+    private void handleError(Error error) {
+        int statusCode = error.getStatusCode();
+        if (statusCode == 422) {
+            if (error.getErrors().containsKey("sync")) {
+                deleteSeqToken();
+                stackRequest();
+            } else {
+                throw new RuntimeException("Unprocessable Entity Error: " + error.getErrors());
+            }
+        } else if (statusCode == 429) {
+            handleRateLimitError();
+        }
+    }
+
+
+    private void deleteSeqToken() {
+        try {
+            SyncStore ts = new SyncStore();
+            ts.setSeqToken(null); // Setting Sequence Token Null
+            realmStoreInstance.beginWriteTransaction();
+            realmStoreInstance.getRealmInstance().insertOrUpdate(ts);
+            realmStoreInstance.commitWriteTransaction();
+        } catch (Exception e) {
+            Log.e("Error :", e.getLocalizedMessage());
+            e.printStackTrace();
+        } finally {
+            realmStoreInstance.closeTransaction();
+        }
+    }
+
+
+    private void handleRateLimitError() {
+        makeRandomDelay();
+        stackRequest();
+    }
+
+
+    public void stackRequest() {
+        Log.w(TAG, "Sync API request made");
+        String sequenceId = getToken(TokenEnum.SEQ);
+        if (sequenceId != null) {
+            Log.i(TAG, "seqId " + sequenceId);
+            stackInstance.seqSync(sequenceId, new SyncResultCallBack() {
                 @Override
                 public void onCompletion(SyncStack syncStack, Error error) {
                     if (error == null) {
@@ -103,66 +122,116 @@ public class SyncManager {
                     }
                 }
             });
+        } else {
+            // When the application is already installed and in use with existing data.
+            String syncToken = getToken(TokenEnum.SYNC);
+            String paginateToken = getToken(TokenEnum.PAGINATION);
+            if (syncToken != null || paginateToken != null) {
+                appAlreadyInUse();
+            } else {
+                newInitialSync();
+            }
+        }
+    }
 
-        } else if (getPaginationToken() != null) {
-            Log.i(TAG, "Call initiated for Pagination Token " + getPaginationToken());
-            stackInstance.syncPaginationToken(getPaginationToken(), new SyncResultCallBack() {
+    private void newInitialSync() {
+        // Whn it's fresh start for Application (new usr) !
+        stackInstance.initSeqSync(new SyncResultCallBack() {
+            @Override
+            public void onCompletion(SyncStack syncStack, Error error) {
+                Log.i(TAG, "Init Sync");
+                if (error == null) {
+                    logger.log(Level.INFO, syncStack.getJSONResponse().toString());
+                    parseResponse(syncStack);
+                } else {
+                    handleError(error);
+                }
+            }
+        });
+    }
+
+    private void appAlreadyInUse() {
+        // To provide support for old sync api
+        String syncToken = getToken(TokenEnum.SYNC);
+        String paginateToken = getToken(TokenEnum.PAGINATION);
+        if (syncToken != null) {
+            stackInstance.syncToken(syncToken, new SyncResultCallBack() {
                 @Override
                 public void onCompletion(SyncStack syncStack, Error error) {
-                    if (error == null) {
-                        logger.log(Level.INFO, syncStack.getJSONResponse().toString());
-                        parseResponse(syncStack);
-                    } else {
-                        handleError(error);
-                    }
+                    //old sync api support
+                    // it may have data or may not have, when it does not have any data means everything is up to date
+                    // if it contains some data the get last item and generate seqId based on event timestamp
+                    processStackResponse(syncStack);
+                }
+            });
+        } else if (paginateToken != null) {
+            stackInstance.syncPaginationToken(paginateToken, new SyncResultCallBack() {
+                @Override
+                public void onCompletion(SyncStack syncStack, Error error) {
+                    //old sync api support
+                    //It defiantly has some data, calculate last item timestamp and generate the seqId
+                    processStackResponse(syncStack);
                 }
             });
         } else {
-            stackInstance.sync(new SyncResultCallBack() {
-                @Override
-                public void onCompletion(SyncStack syncStack, Error error) {
-                    Log.i(TAG, "Initial Sync Call");
-                    if (error == null) {
-                        logger.log(Level.INFO, syncStack.getJSONResponse().toString());
-                        parseResponse(syncStack);
-                    } else {
-                        handleError(error);
-                    }
-                }
-            });
+            newInitialSync();
+        }
+    }
+
+    private void processStackResponse(SyncStack stackResponse) {
+        // Calculate item size and find the timestamp of the last event to generate seqId
+        int size = stackResponse.getCount();
+        if (size > 0) {
+            ArrayList<JSONObject> jsonList = stackResponse.getItems();
+            JSONObject lastItem = jsonList.get(size - 1);
+            String timestamp = lastItem.optString("event_at");
+
+            // Generate seqId based on the timestamp
+            String seqId = Utils.generateSeqId(timestamp); // TODO: re-visit the code
+            Log.w(TAG, "Newly generated seqId: " + seqId);
+
+            // Store sequence id along with sync and pagination tokens
+            String syncToken = stackResponse.getSyncToken();
+            String paginateToken = stackResponse.getPaginationToken();
+            storeSequenceId(syncToken, paginateToken, seqId);
+
+            // Initiate another stack request for further processing
+            stackRequest();
         }
     }
 
 
-    private String getSyncToken() {
+    private String getToken(TokenEnum tokenType) {
         SyncStore syncStore = realmInstance.where(SyncStore.class).findFirst();
         if (syncStore != null) {
-            return realmInstance.where(SyncStore.class).findFirst().getSyncToken();
+            switch (tokenType) {
+                case SEQ:
+                    return syncStore.getSeqToken();
+                case SYNC:
+                    return syncStore.getSyncToken();
+                case PAGINATION:
+                    return syncStore.getPaginationToken();
+                default:
+                    Log.e(TAG, "Invalid token type");
+                    return null;
+            }
         } else {
-            Log.e(TAG, "Sync Token Not Found");
+            Log.e(TAG, "SyncStore Not Found");
             return null;
         }
     }
 
-
-    private String getPaginationToken() {
-        SyncStore syncStore = realmInstance.where(SyncStore.class).findFirst();
-        if (syncStore != null) {
-            return realmInstance.where(SyncStore.class).findFirst().getPaginationToken();
-        } else {
-            Log.e(TAG, "Pagination Token Not Found");
-            return null;
-        }
+    enum TokenEnum {
+        SEQ, SYNC, PAGINATION
     }
-
 
     private void parseResponse(SyncStack stackResponse) {
         ArrayList<JSONObject> jsonList = stackResponse.getItems();
+        String seqToken = stackResponse.getSequentialToken();
         String syncToken = stackResponse.getSyncToken();
-        String pagiToken = stackResponse.getPaginationToken();
-        if (syncToken != null) {
-            persistsToken(syncToken, pagiToken);
-        }
+        String paginateToken = stackResponse.getPaginationToken();
+
+        storeSequenceId(syncToken, paginateToken, seqToken);
         jsonList.forEach(this::handleJSON);
     }
 
@@ -365,43 +434,20 @@ public class SyncManager {
     }
 
 
-    private void persistsToken(String sync_token, String pagination_token) {
-        Log.e("Tokens :", "Sync Token: " + sync_token + " pagination_token: " + pagination_token);
+    private void storeSequenceId(String syncToken, String paginationToken, String seqId) {
+        Log.e(TAG, "SyncToken: " + syncToken);
+        Log.e(TAG, "PaginationToken: " + paginationToken);
+        Log.e(TAG, "SeqId: " + seqId);
         try {
             realmStoreInstance.beginWriteTransaction();
-            realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", sync_token, pagination_token));
+            realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("seqToken", syncToken, paginationToken, seqId));
             realmStoreInstance.commitWriteTransaction();
         } catch (Exception e) {
-            Log.e("Persistence Token :", e.getLocalizedMessage().toString());
+            Log.e("Error :", e.getLocalizedMessage());
             e.printStackTrace();
         } finally {
             realmStoreInstance.closeTransaction();
         }
     }
-
-    private void deleteToken(String syncToken, String paginationToken) {
-        try {
-            realmStoreInstance.beginWriteTransaction();
-            if (syncToken != null) {
-                realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", null, paginationToken));
-                Log.i(TAG, "syncToken deleted");
-            }
-            if (paginationToken != null) {
-                realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", syncToken, null));
-                Log.i(TAG, "paginationToken deleted");
-            }
-            if (syncToken != null && paginationToken != null) {
-                realmStoreInstance.getRealmInstance().insertOrUpdate(new SyncStore("token", null, null));
-                Log.i(TAG, "sync and pagination token deleted");
-            }
-            realmStoreInstance.commitWriteTransaction();
-        } catch (Exception e) {
-            Log.e("Persistence Token :", e.getLocalizedMessage());
-            e.printStackTrace();
-        } finally {
-            realmStoreInstance.closeTransaction();
-        }
-    }
-
 
 }
