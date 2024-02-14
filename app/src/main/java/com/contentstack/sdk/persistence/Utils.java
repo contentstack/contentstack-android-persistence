@@ -11,7 +11,7 @@ import java.util.TimeZone;
 public class Utils {
 
     static String generateSeqId(String timestamp) {
-        Objects.requireNonNull(timestamp, "Timestamp should not be null");
+        Objects.requireNonNull(timestamp, "Timestamp Should Not Be Null");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date eventAtDate = null;
