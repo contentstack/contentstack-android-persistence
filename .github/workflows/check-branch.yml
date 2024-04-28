@@ -2,8 +2,6 @@ name: 'Check Branch'
 
 on:
   pull_request:
-    branches:
-      - master
 
 jobs:
   check_branch:
