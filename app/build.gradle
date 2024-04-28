@@ -102,42 +102,43 @@ android {
     buildFeatures {
         viewBinding true
     }
-}
+    mavenPublishing {
+        publishToMavenCentral(SonatypeHost.DEFAULT)
+        signAllPublications()
+        coordinates("com.contentstack.persistence", "android", "0.0.3")
 
-android.buildFeatures.buildConfig true
-
-mavenPublishing {
-    publishToMavenCentral(SonatypeHost.DEFAULT)
-    signAllPublications()
-    coordinates("com.contentstack.persistence", "android", "0.0.3")
-
-    pom {
-        name = "contentstack-android-persistence"
-        description = "The Content Delivery Persistence SDK facilitates the retrieval and storage of content from your Contentstack account, enabling seamless delivery to your web or mobile properties.."
-        inceptionYear = "2018"
-        packaging 'aar'
-        url = "https://github.com/contentstack/contentstack-android-persistence"
-        licenses {
-            license {
-                name = "The MIT License"
-                url = "https://github.com/contentstack/contentstack-android-persistence/blob/master/LICENSE"
-                distribution = "https://github.com/contentstack/contentstack-android-persistence/blob/master/LICENSE"
+        pom {
+            name = "contentstack-android-persistence"
+            description = "The Content Delivery Persistence SDK facilitates the retrieval and storage of content from your Contentstack account, enabling seamless delivery to your web or mobile properties.."
+            inceptionYear = "2018"
+            packaging 'aar'
+            url = "https://github.com/contentstack/contentstack-android-persistence"
+            licenses {
+                license {
+                    name = "The MIT License"
+                    url = "https://github.com/contentstack/contentstack-android-persistence/blob/master/LICENSE"
+                    distribution = "https://github.com/contentstack/contentstack-android-persistence/blob/master/LICENSE"
+                }
             }
-        }
-        developers {
-            developer {
-                id = "ishaileshmishra"
-                name = "contentstack"
-                url = "https://github.com/contentstack/contentstack-android-persistence"
+            developers {
+                developer {
+                    id = "ishaileshmishra"
+                    name = "contentstack"
+                    url = "https://github.com/contentstack/contentstack-android-persistence"
+                }
             }
-        }
-        scm {
-            url = "scm:git@github.com:contentstack/contentstack-android-persistence"
-            connection = "scm:git:git://github.com/contentstack/contentstack-android-persistence.git"
-            developerConnection = "scm:git@github.com:contentstack/contentstack-android-persistence.git"
+            scm {
+                url = "scm:git@github.com:contentstack/contentstack-android-persistence"
+                connection = "scm:git:git://github.com/contentstack/contentstack-android-persistence.git"
+                developerConnection = "scm:git@github.com:contentstack/contentstack-android-persistence.git"
+            }
         }
     }
 }
+
+// android.buildFeatures.buildConfig true
+
+
 
 dependencies {
     implementation 'com.contentstack.sdk:android:3.14.0-20240208.095825-3'
