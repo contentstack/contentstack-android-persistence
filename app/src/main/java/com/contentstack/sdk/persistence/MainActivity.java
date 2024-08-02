@@ -16,6 +16,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if(!isCallerAllowed()){
+            finish();
+            return;
+        }
+
         Realm.init(getApplicationContext());
         loadTheSDK();
     }
@@ -39,4 +44,11 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    private boolean isCallerAllowed() {
+        String callingPackage = getCallingPackage();
+        return callingPackage == null || callingPackage.equals(getPackageName());
+        
+    }
+
 }
