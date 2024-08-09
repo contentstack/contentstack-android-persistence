@@ -3,7 +3,7 @@ package com.contentstack.sdk.persistence;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.pm.PackageManager;
 import com.contentstack.sdk.Config;
 import com.contentstack.sdk.Contentstack;
 import com.contentstack.sdk.Stack;
@@ -16,7 +16,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(!isCallerAllowed()){
+        if (checkCallingOrSelfPermission("com.contentstack.sdk.permission.MAIN_ACTIVITY_ACCESS")
+            != PackageManager.PERMISSION_GRANTED){
             finish();
             return;
         }
@@ -43,12 +44,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private boolean isCallerAllowed() {
-        String callingPackage = getCallingPackage();
-        return callingPackage == null || callingPackage.equals(getPackageName());
-        
     }
 
 }
