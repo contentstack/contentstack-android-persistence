@@ -3,7 +3,7 @@ package com.contentstack.sdk.persistence;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.pm.PackageManager;
 import com.contentstack.sdk.Config;
 import com.contentstack.sdk.Contentstack;
 import com.contentstack.sdk.Stack;
@@ -15,6 +15,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (checkCallingOrSelfPermission("com.contentstack.sdk.permission.MAIN_ACTIVITY_ACCESS")
+            != PackageManager.PERMISSION_GRANTED){
+            finish();
+            return;
+        }
 
         Realm.init(getApplicationContext());
         loadTheSDK();
@@ -39,4 +45,5 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
 }
