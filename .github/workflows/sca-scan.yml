@@ -12,15 +12,13 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
       - name: Setup local.properties
         run: |
           cat << EOF >> local.properties
           sdk.dir=$ANDROID_HOME
           EOF
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/gradle@master
+        uses: snyk/actions/setup@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
