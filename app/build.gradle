@@ -1,10 +1,10 @@
-plugins {
-    id 'com.android.application'
-    id "realm-android"
-    id "com.vanniktech.maven.publish" version "0.27.0"
-}
+import com.vanniktech.maven.publish.SonatypeHost
 
-// import com.vanniktech.maven.publish.SonatypeHost
+plugins {
+    id 'com.android.library'
+    id "realm-android"
+    id "com.vanniktech.maven.publish" version "0.33.0"
+}
 
 android {
     compileSdkVersion 34
@@ -19,6 +19,9 @@ android {
         release {
             minifyEnabled false
         }
+        debug {
+            minifyEnabled false
+        }
     }
     compileOptions {
         sourceCompatibility = "1.8"
@@ -30,10 +33,42 @@ android {
 }
 
 dependencies {
-    implementation 'com.contentstack.sdk:android:3.14.0-20240208.095825-3'
+    implementation 'com.contentstack.sdk:android:4.0.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.lifecycle:lifecycle-livedata:2.7.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel:2.7.0'
+}
+
+mavenPublishing {
+    publishToMavenCentral("CENTRAL_PORTAL")
+    
+    coordinates(GROUP, POM_ARTIFACT_ID, VERSION_NAME)
+    
+    pom {
+        name = POM_NAME
+        description = POM_DESCRIPTION
+        inceptionYear = POM_INCEPTION_YEAR
+        url = POM_URL
+        licenses {
+            license {
+                name = POM_LICENSE_NAME
+                url = POM_LICENSE_URL
+                distribution = POM_LICENSE_DIST
+            }
+        }
+        developers {
+            developer {
+                id = POM_DEVELOPER_ID
+                name = POM_DEVELOPER_NAME
+                url = POM_DEVELOPER_URL
+            }
+        }
+        scm {
+            url = POM_SCM_URL
+            connection = POM_SCM_CONNECTION
+            developerConnection = POM_SCM_DEV_CONNECTION
+        }
+    }
 }
