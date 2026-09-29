@@ -5,21 +5,39 @@ on:
 jobs:
   security-sca:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@master
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+
       - name: Setup local.properties
         run: |
           cat << EOF >> local.properties
           sdk.dir=$ANDROID_HOME
           EOF
-      - name: Run Snyk to check for vulnerabilities
+
+      - name: Set up Snyk
         uses: snyk/actions/setup@master
+        with:
+          snyk-version: latest
+
+      - name: Run Snyk
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --fail-on=all --all-sub-projects
+        run: snyk test --fail-on=all --all-sub-projects --json > snyk.json
+        continue-on-error: true
+
+      - uses: contentstack/sca-policy@main
