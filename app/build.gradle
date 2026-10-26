@@ -33,7 +33,10 @@ android {
 }
 
 dependencies {
-    implementation 'com.contentstack.sdk:android:4.0.1'
+    implementation('com.contentstack.sdk:android:4.0.1') {
+        // SDK 4.0.1 leaks junit (EPL-1.0) as a runtime dependency; it is only a test library.
+        exclude group: 'junit', module: 'junit'
+    }
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
